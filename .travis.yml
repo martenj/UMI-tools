@@ -1,6 +1,10 @@
 language: python
 sudo: required
 
+os:
+  - linux
+  - osx
+
 env:
   matrix:
     - TEST_STYLE=1
