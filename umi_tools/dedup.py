@@ -128,6 +128,8 @@ def main(argv=None):
     group.add_option("--output-stats", dest="stats", type="string",
                      default=False,
                      help="Specify location to output stats")
+    group.add_option("--consensus", dest="consensus", action="store_true",
+                     help="Generate the consensus sequence for UMI bundles bigger 1", default=False)
 
     parser.add_option_group(group)
 
@@ -222,11 +224,18 @@ def main(argv=None):
 
     # set up ReadCluster functor with methods specific to
     # specified options.method
+    #processor = network.ReadDeduplicator(options.method, options.consensus)
     processor = network.ReadDeduplicator(options.method)
 
-    bundle_iterator = umi_methods.get_bundles(
-        options,
-        metacontig_contig=metacontig2contig)
+    if(options.consensus):
+        bundle_iterator = umi_methods.get_bundles(
+            options,
+            all_reads=True,
+            metacontig_contig=metacontig2contig)
+    else:
+        bundle_iterator = umi_methods.get_bundles(
+            options,
+            metacontig_contig=metacontig2contig)
 
     if options.stats:
         # set up arrays to hold stats data
@@ -269,16 +278,24 @@ def main(argv=None):
                 outfile.write(bundle[umi]["read"])
 
         else:
-
+#            print("Use UMIs")
             # dedup using umis and write out deduped bam
             reads, umis, umi_counts = processor(
                 bundle=bundle,
-                threshold=options.threshold)
+                threshold=options.threshold,
+                consensus=options.consensus)
 
+#            print("reads:",reads)
+#            print("umis:",umis)
+#            print("umi_counts:",umi_counts)
+#            for read in reads[0]:
             for read in reads:
+#                print("dd read: ",read[0])
+#                outfile.write(read[0])
+#                print("dd read: ",read)
                 outfile.write(read)
                 nOutput += 1
-
+#            print("reads printed")
             if options.stats:
 
                 # collect pre-dudupe stats
@@ -288,6 +305,7 @@ def main(argv=None):
 
                 # collect post-dudupe stats
                 post_cluster_umis = [bundle_iterator.barcode_getter(x)[0] for x in reads]
+ #               post_cluster_umis = [bundle_iterator.barcode_getter(x[0])[0] for x in reads]
                 stats_post_df_dict['UMI'].extend(umis)
                 stats_post_df_dict['counts'].extend(umi_counts)
 

@@ -15,6 +15,7 @@ import itertools
 import sys
 import regex
 import numpy as np
+import copy as c
 
 from umi_tools._dedup_umi import edit_distance
 import umi_tools.Utilities as U
@@ -389,7 +390,7 @@ class ReadDeduplicator:
 
         self.UMIClusterer = UMIClusterer(cluster_method=cluster_method)
 
-    def __call__(self, bundle, threshold):
+    def __call__(self, bundle, threshold, consensus):
         '''Process the the bundled reads according to the method specified
         in the constructor. Return signature is:
 
@@ -401,15 +402,80 @@ class ReadDeduplicator:
                       corresponding UMI
         '''
 
+ #       print("n.bundle:",len(bundle))
+ #       print("bundle:",bundle)
         umis = bundle.keys()
+ #       print("umis:",umis)
+ #       killme = False
+ #       for i in umis:
+ #           print("bundle[",i,"]:",bundle[i])
+ #           if bundle[i]["count"] > 3:
+ #               killme = True
+ #               print("bibabebundle[",i,"]:",bundle[i])
+ #               reads = bundle[i]["read"]
+ #               print("\treads:",reads)
+ #               for r in reads:
+ #                   print("seq:\t",r.seq)
+ #                   print("alnseq:\t",r.query_alignment_sequence)
+ #                   print("\tread:",r)
+
+
+ #       print("n.umis:", len(umis))
         counts = {umi: bundle[umi]["count"] for umi in umis}
 
         clusters = self.UMIClusterer(umis, counts, threshold)
 
+ #       print("nclusters:", len(clusters))
+ #       i=0
+ #       kill = False
+ #       for cluster in clusters:
+ #           i += 1
+ #           if cluster["count"] > 1:
+ #               print("cluster:",cluster)
+ #           if(i > 5):
+ #               kill = True
         final_umis = [cluster[0] for cluster in clusters]
+ #       print("!!!!final_umis:",final_umis)
+
+#        for i in final_umis:
+#            print("final_bundle[",i,"]:",bundle[i])
+#            if bundle[i]["count"] > 3:
+#                killme = True
+#                print("final_bibabebundle[",i,"]:",bundle[i])
+#                reads = bundle[i]["read"]
+#                print("\tfinal_reads:",reads)
+#                for r in reads:
+#                    print("final_seq:\t",r.seq)
+#                    print("final_alnseq:\t",r.query_alignment_sequence)
+#                    print("\tfinal_read:",r)
+
+#        print("n.final_umis:",len(final_umis))
+#        print("final_umis:",final_umis)
         umi_counts = [sum(counts[umi] for umi in cluster)
                       for cluster in clusters]
+#        print("umi_counts:",umi_counts)
+        # I think this is the best position to create the consensus reads
+
+        # Tis with return in single read mode the one with the highes Mapping score
         reads = [bundle[umi]["read"] for umi in final_umis]
+
+        # HERE WE HAVE TO EITHER THROW AWAY EVERY READ BUT THE FIRST PER UMI_BUNDLE OR
+#        print("type of reads: ",type(reads))
+        if(consensus):
+            cs_maker = get_consensus_read()
+            reads = [cs_maker(read) for read in reads]
+#            for read in enumerate(reads):
+#                cs_maker(read)
+
+
+#        print("type of reads: ",type(reads))
+#        print("length.reads:",len(reads))
+#        print("RETURN:")
+#        print("  reads:",reads)
+#        print("  final_umis:",final_umis)
+#        print("  umi_counts:",umi_counts)
+#        if(killme or kill):
+#            sys.exit(0)
 
         return (reads, final_umis, umi_counts)
 
@@ -510,3 +576,40 @@ class CellClusterer:
                       self.get_groups(clusters, adj_list, counts)]
 
         return final_umis
+
+
+class get_consensus_read:
+    ''' class to generate a consensus read for a list of reads
+    TODO there is a huge bug in UMI_tools - the cluster with a mismatch in the UMI lacks the read with this UMI'''
+
+
+    def __call__(self, reads):
+        if len(reads) < 1: # empty list
+            myread =  None
+#            print("!!!!!! EMPTY")
+        elif len(reads) == 1: # single element
+            myread =  reads[0]
+#            print("!!!!!! SINGLE")
+        else: # now we have to construct the consensus ...
+#            myread =  reads[0]
+#            print("!!!!!! MULTI")
+            # clone the read with the best mapping quality to modify then
+            myread = c.deepcopy(reads[0])
+            # check for the best mapping quality ()has to be changed after the sequence
+#            for read in reads:
+#                print("MAQ:",read.mapping_quality)
+            dna_strings = [read.query_sequence for read in reads]
+#            print("dna_strings: ",dna_strings)
+            transposed = zip(*dna_strings)
+#            print("transposed dna_strings: ",transposed)
+            counters = [collections.Counter(column) for column in transposed]
+#            print("counters dna_strings: ", counters)
+            # create consensus
+            consensus = ''.join([counter.most_common(1)[0][0] for counter in counters])
+#            print("consensus: ", consensus
+#            print("myread ori: ",myread)
+            myread.query_sequence = consensus
+#            print("myread upd: ",myread)
+
+            # if myread.mapping_quality
+        return myread
