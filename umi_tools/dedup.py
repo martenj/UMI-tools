@@ -286,20 +286,23 @@ def main(argv=None):
                 threshold=options.threshold,
                 consensus=options.consensus)
             # remove the None values from the reads list
-            tmp = [x for x in reads if x is not None]
-            reads = tmp
-            print("reads:",reads)
-            print("len.reads:",len(reads))
-            print("umis:",umis)
-            print("umi_counts:",umi_counts)
+#            print("reads:",reads)
+#            print("len.reads:",len(reads))
+#            tmp = [x for x in reads if x is not None]
+#            reads = tmp
+            if(reads[0] is None):
+                continue
+#            print("reads:",reads)
+#            print("len.reads:",len(reads))
+#            print("umis:",umis)
+#            print("umi_counts:",umi_counts)
 #            for read in reads[0]:
             for read in reads:
 #                print("dd read: ",read)
 #                outfile.write(read[0])
 #                print("dd read: ",read)
-                if(read != None):
-                    outfile.write(read)
-                    nOutput += 1
+                outfile.write(read)
+                nOutput += 1
 #            print("reads printed")
             if options.stats:
 
