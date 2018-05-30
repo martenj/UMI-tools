@@ -221,6 +221,7 @@ def main(argv=None):
 
         else:
             inreads = infile.fetch()
+            print("we are here")
 
     # set up ReadCluster functor with methods specific to
     # specified options.method
@@ -290,7 +291,7 @@ def main(argv=None):
 #            print("umi_counts:",umi_counts)
 #            for read in reads[0]:
             for read in reads:
-#                print("dd read: ",read[0])
+#                print("dd read: ",read)
 #                outfile.write(read[0])
 #                print("dd read: ",read)
                 outfile.write(read)

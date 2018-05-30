@@ -402,7 +402,7 @@ class ReadDeduplicator:
                       corresponding UMI
         '''
 
- #       print("n.bundle:",len(bundle))
+#        print("n.bundle:",len(bundle))
  #       print("bundle:",bundle)
         umis = bundle.keys()
  #       print("umis:",umis)
@@ -584,32 +584,41 @@ class get_consensus_read:
 
 
     def __call__(self, reads):
-        if len(reads) < 1: # empty list
-            myread =  None
+        '''consensus can only bve calculated on UMI clusters of at least 3 reads
+        for the start we will just throw away all UMI clusters, that hove only a single read or two reads.
+        in a second '''
+        ##old part
+#        if len(reads) < 1: # empty list
+#            myread =  None
 #            print("!!!!!! EMPTY")
-        elif len(reads) == 1: # single element
-            myread =  reads[0]
-#            print("!!!!!! SINGLE")
-        else: # now we have to construct the consensus ...
+#        elif len(reads) == 1: # single element
 #            myread =  reads[0]
-#            print("!!!!!! MULTI")
+#            print("!!!!!! SINGLE-READ")
+
+        ##new part
+        if len(reads) < 3:
+            myread = None
+        else: # now we have to construct the consensus ...
+        #            myread =  reads[0]
+ #           print("!!!!!! MULTI-READS")
             # clone the read with the best mapping quality to modify then
             myread = c.deepcopy(reads[0])
             # check for the best mapping quality ()has to be changed after the sequence
-#            for read in reads:
-#                print("MAQ:",read.mapping_quality)
+        #            for read in reads:
+        #                print("MAQ:",read.mapping_quality)
             dna_strings = [read.query_sequence for read in reads]
-#            print("dna_strings: ",dna_strings)
+        #            print("dna_strings: ",dna_strings)
             transposed = zip(*dna_strings)
-#            print("transposed dna_strings: ",transposed)
+        #            print("transposed dna_strings: ",transposed)
             counters = [collections.Counter(column) for column in transposed]
-#            print("counters dna_strings: ", counters)
+        #            print("counters dna_strings: ", counters)
             # create consensus
             consensus = ''.join([counter.most_common(1)[0][0] for counter in counters])
-#            print("consensus: ", consensus
-#            print("myread ori: ",myread)
+#            print("original : ", myread.query_sequence)
+#            print("consensus: ", consensus)
+        #            print("myread ori: ",myread)
             myread.query_sequence = consensus
-#            print("myread upd: ",myread)
+        #            print("myread upd: ",myread)
 
             # if myread.mapping_quality
         return myread

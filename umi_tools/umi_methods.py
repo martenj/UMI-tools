@@ -1053,6 +1053,7 @@ class TwoPassPairWriter:
                 len(self.read1s), self.chrom))
 
         for read in self.infile.fetch(reference=self.chrom, multiple_iterators=True):
+#            print("fetch mates from infile")
             if any((read.is_unmapped, read.mate_is_unmapped, read.is_read1)):
                 continue
 
