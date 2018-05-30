@@ -285,17 +285,21 @@ def main(argv=None):
                 bundle=bundle,
                 threshold=options.threshold,
                 consensus=options.consensus)
-
-#            print("reads:",reads)
-#            print("umis:",umis)
-#            print("umi_counts:",umi_counts)
+            # remove the None values from the reads list
+            tmp = [x for x in reads if x is not None]
+            reads = tmp
+            print("reads:",reads)
+            print("len.reads:",len(reads))
+            print("umis:",umis)
+            print("umi_counts:",umi_counts)
 #            for read in reads[0]:
             for read in reads:
 #                print("dd read: ",read)
 #                outfile.write(read[0])
 #                print("dd read: ",read)
-                outfile.write(read)
-                nOutput += 1
+                if(read != None):
+                    outfile.write(read)
+                    nOutput += 1
 #            print("reads printed")
             if options.stats:
 
