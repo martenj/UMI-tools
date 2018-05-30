@@ -288,11 +288,11 @@ def main(argv=None):
             # remove the None values from the reads list
 #            print("reads:",reads)
 #            print("len.reads:",len(reads))
-#            tmp = [x for x in reads if x is not None]
-#            reads = tmp
-            if(reads[0] is None):
-                print("continue")
+            tmp = [x for x in reads if x is not None]
+            reads = tmp
+            if len(reads) == 0:
                 continue
+
 #            print("reads:",reads)
 #            print("len.reads:",len(reads))
 #            print("umis:",umis)
