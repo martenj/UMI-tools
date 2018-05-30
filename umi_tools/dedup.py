@@ -291,6 +291,7 @@ def main(argv=None):
 #            tmp = [x for x in reads if x is not None]
 #            reads = tmp
             if(reads[0] is None):
+                print("continue")
                 continue
 #            print("reads:",reads)
 #            print("len.reads:",len(reads))
